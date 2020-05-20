@@ -29,7 +29,7 @@ CORS(app)
 '''
 
 
-@app.route('/drinks', methods=['GET'])
+@app.route('/drinks', methods = ['GET'])
 def get_drinks():
     drinks = Drink.query.all()
 
@@ -49,7 +49,7 @@ def get_drinks():
 '''
 
 
-@app.route('/drinks-detail', methods=['GET'])
+@app.route('/drinks-detail', methods = ['GET'])
 @requires_auth('get:drinks-detail')
 def get_drink_detail(payload):
     drinks = Drink.query.all()
@@ -71,7 +71,7 @@ def get_drink_detail(payload):
 '''
 
 
-@app.route('/drinks', methods=['POST'])
+@app.route('/drinks', methods = ['POST'])
 @requires_auth('post:drinks')
 def create_drink(payload):
 
@@ -109,6 +109,38 @@ def create_drink(payload):
 '''
 
 
+@app.route('/drinks/<int:id>', methods = ['PATCH'])
+@requires_auth('patch:drinks')
+def update_drink(payload, id):
+    req = request.get_json()
+    drink = Drink.query.filter(Drink.id == id).one_or_none()
+
+    if not drink:
+        abort(404)
+
+    try:
+        req_title = req.get('title')
+        req_recipe = req.get('recipe')
+
+        if req_title:
+            drink.title = req_title
+        if req_recipe:
+            drink.recipe = json.dumps(req['recipe'])
+
+        drink.update()
+
+    except Exception:
+        abort(400)
+
+    
+    return jsonify({
+        "success": True,
+        "drinks": [drink.long()]
+    }), 200
+
+
+
+
 '''
 @TODO implement endpoint
     DELETE /drinks/<id>
@@ -119,6 +151,28 @@ def create_drink(payload):
     returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
         or appropriate status code indicating reason for failure
 '''
+
+
+
+@app.route('/drinks/<int:id>', methods=['DELETE'])
+@requires_auth('delete:drinks')
+def delete_drink(payload, id):
+    drink = Drink.query.filter(Drink.id == id).one_or_none()
+    print(drink)
+    if not drink:
+        abort(404)
+
+    try:
+        drink.delete()
+    except Exception:
+        abort(400)
+
+    return jsonify({
+        "success": True, 
+        'delete':id
+    }), 200
+
+
 
 
 # Error Handling
