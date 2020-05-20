@@ -12,7 +12,7 @@ setup_db(app)
 CORS(app)
 
 # Uncomment the following line to initialize the database.
-# db_drop_and_create_all()
+db_drop_and_create_all()
 
 # ROUTES
 # API for Getting All Drinks
