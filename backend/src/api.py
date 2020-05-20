@@ -18,7 +18,7 @@ CORS(app)
 '''
 # db_drop_and_create_all()
 
-## ROUTES
+# ROUTES
 '''
 @TODO implement endpoint
     GET /drinks
@@ -27,6 +27,7 @@ CORS(app)
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
+
 
 @app.route('/drinks', methods=['GET'])
 def get_drinks():
@@ -37,6 +38,7 @@ def get_drinks():
         'drinks': [drink.short() for drink in drinks]
     }), 200
 
+
 '''
 @TODO implement endpoint
     GET /drinks-detail
@@ -46,7 +48,8 @@ def get_drinks():
         or appropriate status code indicating reason for failure
 '''
 
-@app.route('drinks-detail', methods=['GET'])
+
+@app.route('/drinks-detail', methods=['GET'])
 @requires_auth('get:drinks-detail')
 def get_drink_detail(payload):
     drinks = Drink.query.all()
@@ -66,6 +69,31 @@ def get_drink_detail(payload):
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
         or appropriate status code indicating reason for failure
 '''
+
+
+@app.route('/drinks', methods=['POST'])
+@requires_auth('post:drinks')
+def create_drink(payload):
+
+    req = request.get_json()
+
+    try:
+        recipe = req['recipe']
+        if isinstance(recipe, dict):
+            recipe = [recipe]
+            print(recipe)
+        drink = Drink()
+        drink.title = req['title']
+        drink.recipe = json.dumps(recipe)
+        drink.insert()
+
+    except Exception:
+        abort(400)
+
+    return jsonify({
+        "success": True,
+        "drinks": [drink.long()]
+    })
 
 
 '''
@@ -93,17 +121,20 @@ def get_drink_detail(payload):
 '''
 
 
-## Error Handling
+# Error Handling
 '''
 Example error handling for unprocessable entity
 '''
+
+
 @app.errorhandler(422)
 def unprocessable(error):
     return jsonify({
-                    "success": False, 
-                    "error": 422,
-                    "message": "unprocessable"
-                    }), 422
+        "success": False,
+        "error": 422,
+        "message": "unprocessable"
+    }), 422
+
 
 '''
 @TODO implement error handlers using the @app.errorhandler(error) decorator
